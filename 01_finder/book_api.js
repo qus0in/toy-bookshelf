@@ -1,3 +1,5 @@
+// [DOM]
+
 // 알림창
 const toastElList = [].slice.call(document.querySelectorAll('.toast'))
 const toastList = toastElList.map(function (toastEl) {
@@ -6,6 +8,7 @@ const toastList = toastElList.map(function (toastEl) {
 
 // 검색창
 const keyword = document.querySelector("#keyword");
+
 // 이벤트 리스터 추가
 keyword.addEventListener(
     "keydown", (e) => {
@@ -14,6 +17,10 @@ keyword.addEventListener(
         }
     }
 );
+
+const defaultImg = document.querySelector("#defaultImg")
+
+// [데이터]
 
 // 다음 검색 API Key
 const restApiKey = "9a9cf8c2b20f08fbbe9bd8f8288861e7";
@@ -32,10 +39,12 @@ function find() {
     // 텍스트가 빈 값이라면 에러 알림창 표시
     if (keywordText == "") {
         toastList[0].show();
+        defaultImg.classList.remove("d-none");
         return;
     }
 
     console.log(keywordText);
+    defaultImg.classList.add("d-none");
 
     api({ params: { query: keywordText } })
         .then(function (response) {
