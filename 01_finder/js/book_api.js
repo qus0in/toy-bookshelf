@@ -97,6 +97,7 @@ function makeCard(data) {
     // - 타이틀 (책 이름)
     const title = document.createElement("h5");
     title.classList.add("card-text");
+    title.classList.add("bold");
     title.innerText = data.title;
     body.appendChild(title);
     // - 저자
