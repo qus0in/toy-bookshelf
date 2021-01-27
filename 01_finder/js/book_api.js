@@ -21,6 +21,12 @@ keyword.addEventListener(
 // 기본 이미지
 const defaultImg = document.querySelector("#defaultImg");
 
+// 결과 없음 이미지
+const emptyImg = document.querySelector("#emptyImg");
+
+// 에러 이미지
+const errorImg = document.querySelector("#errorImg");
+
 // 책 카드 그리드
 const bookCardGrid = document.querySelector("#bookCardGrid");
 
@@ -40,78 +46,85 @@ const api = axios.create({
 function find() {
     const keywordText = keyword.value;
 
+    defaultImg.classList.add("d-none");
+    emptyImg.classList.add("d-none");
+    errorImg.classList.add("d-none");
+    bookCardGrid.classList.add("d-none");
+
     // 텍스트가 빈 값이라면 에러 알림창 표시
     if (keywordText == "") {
         toastList[0].show();
         // 기본 이미지 보여주기
         defaultImg.classList.remove("d-none");
-        bookCardGrid.classList.add("d-none");
         return;
     }
 
     // console.log(keywordText);
 
     bookCardGrid.innerHTML = "";
-    api({ params: { query: keywordText } })
+    api({ params: { query: keywordText, size: 12 } })
         .then(function (response) {
             console.log(response);
+            const documents = response.data.documents;
+            if (documents.length == 0) {
+                emptyImg.classList.remove("d-none");
+                return;
+            }
             response.data.documents.forEach(
                 (e) =>
                 bookCardGrid.appendChild(
                     makeCard(e)
                 ));
+            bookCardGrid.classList.remove("d-none");
         })
         .catch(function (error) {
             console.log(error);
+            errorImg.classList.remove("d-none");
         });
 
-    // 기본 이미지 감추기
-    defaultImg.classList.add("d-none");
-    bookCardGrid.classList.remove("d-none");
 }
 
 // 책 카드 헬퍼
 function makeCard(data) {
-    // 그리드 열
-    const col = document.createElement("div");
-    col.classList.add("col");
-    // 카드 요소 생성
-    const card = document.createElement("div");
-    card.classList.add("card");
-    card.classList.add("h-100");
-    // 좌측
-    const left = document.createElement("div");
-    left.classList.add("col-lg-4");
-    left.classList.add("col-md");
-    left.classList.add("d-flex");
-    left.classList.add("justify-content-center");
-    left.classList.add("align-items-center");
-    // - 썸네일 이미지
+    // 이미지
     const img = document.createElement("img");
-    img.setAttribute("src", data.thumbnail);
+    img.setAttribute("src", data.thumbnail ? data.thumbnail : '/01_finder/img/no_thumbnail.png');
     img.classList.add("card-img-top");
-    img.classList.add("border");
-    left.appendChild(img);
-    card.appendChild(left);
-    // 우측
-    const right = document.createElement("div");
-    right.classList.add("col-lg-8");
-    right.classList.add("col-md");
-    // - 카드 바디
+
+    // 카드 바디
     const body = document.createElement("div");
     body.classList.add("card-body");
     // - 타이틀 (책 이름)
-    const title = document.createElement("div");
+    const title = document.createElement("h5");
     title.classList.add("card-text");
     title.innerText = data.title;
     body.appendChild(title);
-    right.appendChild(body);
+    // - 저자
+    const authors = document.createElement("p");
+    authors.classList.add("card-text");
+    authors.innerText = data.authors.join(" / ");
+    body.appendChild(authors);
+    // - 더보기
+    const more = document.createElement("a");
+    more.classList.add("btn");
+    more.classList.add("btn-sm");
+    more.classList.add("btn-secondary");
+    more.classList.add("mt-1");
+    more.setAttribute("href", data.url);
+    more.setAttribute("target", "_blank");
+    more.innerText = "자세히 보기";
+    body.appendChild(more);
     
-    const row = document.createElement("div");
-    row.classList.add("row");
-    row.appendChild(left);
-    row.appendChild(right);
-    card.appendChild(row);
+    // 카드 요소
+    const card = document.createElement("div");
+    card.classList.add("card");
+    card.classList.add("h-100");
+    card.appendChild(img);
+    card.appendChild(body);
+
+    // 그리드 열
+    const col = document.createElement("div");
+    col.classList.add("col");    
     col.appendChild(card);
     // console.log(col);
     return col;
