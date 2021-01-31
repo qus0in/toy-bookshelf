@@ -39,12 +39,17 @@ function find() {
     const toastList = toastElList.map(function (toastEl) {
         return new bootstrap.Toast(toastEl)
     });
+    // 알림창 박스
+    const toastBox = document.querySelector("#toastBox");
 
     hideAll();
 
-    showEmptyKeywordToast();
-
-    drawGrid(1);
+    // 텍스트가 빈 값이라면 에러 알림창 표시
+    if (keywordText == "") {
+        showToast();
+    } else {
+        drawGrid(1);
+    }
 
     // 모두 감추기
     function hideAll() {
@@ -53,18 +58,16 @@ function find() {
         errorImg.classList.add("d-none");
         bookCardGrid.classList.add("d-none");
         pagination.classList.add("d-none");
+        toastBox.classList.add("d-none");
     }
 
     // 에러 알림창 표시
-    function showEmptyKeywordToast() {
-        // 텍스트가 빈 값이라면 에러 알림창 표시
-        if (keywordText == "") {
-            // 알림창 띄우기
-            toastList[0].show();
-            // 기본 이미지 보여주기
-            defaultImg.classList.remove("d-none");
-            return;
-        }
+    function showToast() {
+        toastBox.classList.remove("d-none");
+        // 알림창 띄우기
+        toastList[0].show();
+        // 기본 이미지 보여주기
+        defaultImg.classList.remove("d-none");
     }
 
     // 그리드 그리기
@@ -74,7 +77,7 @@ function find() {
         // console.log(keywordText, page);
         api({ params: { query: keywordText, size: 12, page: page } })
             .then(function (response) {
-                // console.log(response);
+                console.log(response);
                 // 카드
                 const documents = response.data.documents;
                 if (documents.length == 0) {
@@ -123,15 +126,20 @@ function find() {
         authors.classList.add("card-text");
         authors.innerText = data.authors.join(" / ");
         body.appendChild(authors);
-        // - 더보기
-        const more = document.createElement("a");
-        more.classList.add("btn");
-        more.classList.add("btn-sm");
-        more.classList.add("btn-secondary");
-        more.classList.add("mt-1");
-        more.setAttribute("href", data.url);
-        more.setAttribute("target", "_blank");
-        more.innerText = "자세히 보기";
+        // - 밀리의 서재
+        const ebook = drawBtn(
+            "밀리",
+            `https://www.millie.co.kr/v3/search/result/${encodeURIComponent(data.title)}?type=all&order=keyword&category=1`
+        );
+        body.appendChild(ebook);
+        // - 알라딘
+        const used = drawBtn(
+            "알라딘",
+            `https://www.aladin.co.kr/search/wsearchresult.aspx?SearchTarget=UsedStore&ViewType=Detail&KeyWord=${encodeURIComponent(data.title)}`
+        );
+        body.appendChild(used);
+        // - 자세히 보기
+        const more = drawBtn("자세히보기", data.url);
         body.appendChild(more);
 
         // 카드 요소
@@ -147,6 +155,18 @@ function find() {
         col.appendChild(card);
         // console.log(col);
         return col;
+
+        function drawBtn(label, url) {
+            const btn = document.createElement("a");
+            btn.classList.add("btn");
+            btn.classList.add("btn-sm");
+            btn.classList.add("btn-secondary");
+            btn.classList.add("m-1");
+            btn.setAttribute("href", url);
+            btn.setAttribute("target", "_blank");
+            btn.innerText = label;
+            return btn;
+        }
     }
 
     // 페이지네이션 그리기
